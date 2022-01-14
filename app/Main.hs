@@ -1,5 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
+import Data.Bits
+import Data.Foldable
 import qualified Language.C as C
 import qualified Language.C.Analysis as C
 import Text.PrettyPrint
@@ -56,6 +58,26 @@ funcTypeToCFunPtrType FuncType {..} =
 funcTypeToCFunPtrTypeStr :: FuncType -> String
 funcTypeToCFunPtrTypeStr =
   renderStyle (style {mode = OneLineMode}) . C.pretty . funcTypeToCFunPtrType
+
+funcTypeEncode :: FuncType -> Word
+funcTypeEncode FuncType {..} = (r `shiftL` 1) .|. tag
+  where
+    r =
+      foldl'
+        ( \acc ty ->
+            (acc `shiftL` 2)
+              .|. ( case ty of
+                      I32 -> 0
+                      I64 -> 1
+                      F32 -> 2
+                      F64 -> 3
+                  )
+        )
+        1
+        tys
+    (tys, tag) = case retType of
+      Just ty -> (ty : argTypes, 1)
+      _ -> (argTypes, 0)
 
 main :: IO ()
 main = putStrLn "Hello, Haskell!"
