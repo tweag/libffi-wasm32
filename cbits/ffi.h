@@ -46,6 +46,8 @@ typedef enum {
 ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
                         ffi_type *rtype, ffi_type **atypes);
 
+void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue);
+
 #ifdef __cplusplus
 }
 #endif

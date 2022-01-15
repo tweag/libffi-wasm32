@@ -1,9 +1,9 @@
 #include <ffi.h>
 
-static const ffi_type ffi_type_i32 = {.size = 4, .alignment = 4, .type = 0};
-static const ffi_type ffi_type_i64 = {.size = 8, .alignment = 8, .type = 1};
-static const ffi_type ffi_type_f32 = {.size = 4, .alignment = 4, .type = 2};
-static const ffi_type ffi_type_f64 = {.size = 8, .alignment = 8, .type = 3};
+static const ffi_type ffi_type_i32 = {.size = 4, .alignment = 4, .type = 1};
+static const ffi_type ffi_type_i64 = {.size = 8, .alignment = 8, .type = 2};
+static const ffi_type ffi_type_f32 = {.size = 4, .alignment = 4, .type = 3};
+static const ffi_type ffi_type_f64 = {.size = 8, .alignment = 8, .type = 4};
 
 const ffi_type ffi_type_void = {.size = 0, .alignment = 0, .type = 0};
 
@@ -26,14 +26,11 @@ ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
   cif->arg_types = atypes;
   cif->rtype = rtype;
 
-  unsigned acc = 1;
-  if (rtype != &ffi_type_void) {
-    acc = (acc << 2) | rtype->type;
+  unsigned acc = 0;
+  for (unsigned i = 0, rdx = 1; i < nargs; ++i, rdx *= 5) {
+    acc += rdx * atypes[i]->type;
   }
-  for (unsigned i = 0; i < nargs; ++i) {
-    acc = (acc << 2) | atypes[i]->type;
-  }
-  acc = (acc << 1) | (rtype != &ffi_type_void);
+  acc = acc * 5 + rtype->type;
   cif->encoding = acc;
 
   return FFI_OK;
