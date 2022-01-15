@@ -33,6 +33,7 @@ typedef struct {
   unsigned nargs;
   ffi_type **arg_types;
   ffi_type *rtype;
+  unsigned encoding;
 } ffi_cif;
 
 typedef enum {

@@ -25,5 +25,16 @@ ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
   cif->nargs = nargs;
   cif->arg_types = atypes;
   cif->rtype = rtype;
+
+  unsigned acc = 1;
+  if (rtype != &ffi_type_void) {
+    acc = (acc << 2) | rtype->type;
+  }
+  for (unsigned i = 0; i < nargs; ++i) {
+    acc = (acc << 2) | atypes[i]->type;
+  }
+  acc = (acc << 1) | (rtype != &ffi_type_void);
+  cif->encoding = acc;
+
   return FFI_OK;
 }
