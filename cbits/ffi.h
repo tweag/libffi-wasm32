@@ -48,6 +48,15 @@ ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
 
 void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue);
 
+typedef char ffi_closure;
+
+ffi_status ffi_alloc_prep_closure(ffi_closure **pclosure, ffi_cif *cif,
+                                  void (*fun)(ffi_cif *cif, void *ret,
+                                              void **args, void *user_data),
+                                  void *user_data, void **code);
+
+void ffi_closure_free(void *);
+
 #ifdef __cplusplus
 }
 #endif
