@@ -235,6 +235,10 @@ ffiPoolFuncArrDef i m =
     <> mconcat (intersperse "," [ffiPoolFuncName i j | j <- [0 .. m - 1]])
     <> "};\n"
 
+ffiClosureFreeDef :: Builder
+ffiClosureFreeDef =
+  "void ffi_closure_free(void *c)\n{\n((ffi_closure*)c)->fun=NULL;\n}\n"
+
 ffiClosureC :: [(Word, Word, FuncType)] -> Builder
 ffiClosureC fts =
   "#include <ffi.h>\n\n"
@@ -244,6 +248,7 @@ ffiClosureC fts =
           <> ffiPoolFuncArrDef i m
         | (i, m, ft) <- fts
       ]
+    <> ffiClosureFreeDef
 
 main :: IO ()
 main = do
