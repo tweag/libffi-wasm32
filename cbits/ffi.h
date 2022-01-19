@@ -42,7 +42,8 @@ typedef enum {
   FFI_OK = 0,
   FFI_BAD_TYPEDEF,
   FFI_BAD_ABI,
-  FFI_BAD_ARGTYPE
+  FFI_BAD_ARGTYPE,
+  FFI_CLOSURE_ALLOC_FAIL
 } ffi_status;
 
 ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
@@ -54,7 +55,6 @@ typedef struct {
   ffi_cif *cif;
   void (*fun)(ffi_cif *, void *, void **, void *);
   void *user_data;
-  unsigned short i;
 } ffi_closure;
 
 ffi_status ffi_alloc_prep_closure(ffi_closure **pclosure, ffi_cif *cif,
