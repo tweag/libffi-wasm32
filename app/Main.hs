@@ -156,17 +156,25 @@ ffiCallFunc fts =
 ffiCallC :: [(Word, FuncType)] -> Builder
 ffiCallC fts = "#include <ffi.h>\n\n" <> ffiCallFunc fts
 
-ffiPoolClosureArrayName :: Word -> Builder
-ffiPoolClosureArrayName i = "ffi_pool_closure_" <> wordHex i
+ffiPoolClosureArrName :: Word -> Builder
+ffiPoolClosureArrName i = "ffi_pool_closure_" <> wordHex i
+
+ffiPoolClosureArrDef :: Word -> Word -> Builder
+ffiPoolClosureArrDef i m =
+  "static ffi_closure "
+    <> ffiPoolClosureArrName i
+    <> "[0x"
+    <> wordHex m
+    <> "];\n"
 
 ffiPoolClosure :: Word -> Word -> Builder
-ffiPoolClosure i j = ffiPoolClosureArrayName i <> "[0x" <> wordHex j <> "]"
+ffiPoolClosure i j = ffiPoolClosureArrName i <> "[0x" <> wordHex j <> "]"
 
 ffiPoolFuncName :: Word -> Word -> Builder
 ffiPoolFuncName i j = "ffi_pool_func_" <> wordHex i <> "_" <> wordHex j
 
-ffiPoolFunc :: Word -> FuncType -> Word -> Builder
-ffiPoolFunc i FuncType {..} j =
+ffiPoolFuncDef :: Word -> Word -> FuncType -> Builder
+ffiPoolFuncDef i j FuncType {..} =
   "static "
     <> ( case retType of
            Just rt -> string7 (cToStr (valTypeToCType rt))
@@ -199,16 +207,16 @@ ffiPoolFunc i FuncType {..} j =
            _ -> mempty
        )
     <> ffiPoolClosure i j
-    <> "->fun("
+    <> ".fun("
     <> ffiPoolClosure i j
-    <> "->cif,"
+    <> ".cif,"
     <> ( case retType of
            Just _ -> "&ret,"
            _ -> "NULL,"
        )
     <> (if null argTypes then "NULL," else "args,")
     <> ffiPoolClosure i j
-    <> "->user_data"
+    <> ".user_data"
     <> ");\n"
     <> ( case retType of
            Just _ -> "return ret;\n"
@@ -216,8 +224,33 @@ ffiPoolFunc i FuncType {..} j =
        )
     <> "}\n"
 
+ffiPoolFuncArrName :: Word -> Builder
+ffiPoolFuncArrName i = "ffi_pool_func_" <> wordHex i
+
+ffiPoolFuncArrDef :: Word -> Word -> Builder
+ffiPoolFuncArrDef i m =
+  "static void *"
+    <> ffiPoolFuncArrName i
+    <> "[] = {"
+    <> mconcat (intersperse "," [ffiPoolFuncName i j | j <- [0 .. m - 1]])
+    <> "};\n"
+
+ffiClosureC :: [(Word, Word, FuncType)] -> Builder
+ffiClosureC fts =
+  "#include <ffi.h>\n\n"
+    <> mconcat
+      [ ffiPoolClosureArrDef i m
+          <> mconcat [ffiPoolFuncDef i j ft | j <- [0 .. m - 1]]
+          <> ffiPoolFuncArrDef i m
+        | (i, m, ft) <- fts
+      ]
+
 main :: IO ()
 main = do
+  let fts = funcTypeEnum 4
   withBinaryFile "cbits/ffi_call.c" WriteMode $
-    \h -> hPutBuilder h $ ffiCallC $ funcTypeEnum 4
+    \h -> hPutBuilder h $ ffiCallC fts
   callProcess "clang-format" ["-i", "cbits/ffi_call.c"]
+  withBinaryFile "cbits/ffi_closure.c" WriteMode $
+    \h -> hPutBuilder h $ ffiClosureC [(i, 0x10, ft) | (i, ft) <- fts]
+  callProcess "clang-format" ["-i", "cbits/ffi_closure.c"]
