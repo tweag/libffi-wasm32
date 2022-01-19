@@ -183,37 +183,38 @@ ffiPoolFunc i FuncType {..} j =
           ]
       )
     <> ")\n{\n"
-    <> if null argTypes
-      then mempty
-      else
-        "void *args[] = {"
-          <> mconcat
-            ( intersperse
-                ","
-                ["&a" <> wordHex k | (k, _) <- zip [0 ..] argTypes]
-            )
-          <> "};\n"
-          <> ( case retType of
-                 Just rt -> string7 (cToStr (valTypeToCType rt)) <> " ret;\n"
-                 _ -> mempty
-             )
-          <> ffiPoolClosure i j
-          <> "->fun("
-          <> ffiPoolClosure i j
-          <> "->cif,"
-          <> ( case retType of
-                 Just _ -> "&ret,"
-                 _ -> "NULL,"
-             )
-          <> (if null argTypes then "NULL," else "args,")
-          <> ffiPoolClosure i j
-          <> "->user_data"
-          <> ");\n"
-          <> ( case retType of
-                 Just _ -> "return ret;\n"
-                 _ -> mempty
-             )
-          <> "}\n"
+    <> ( if null argTypes
+           then mempty
+           else
+             "void *args[] = {"
+               <> mconcat
+                 ( intersperse
+                     ","
+                     ["&a" <> wordHex k | (k, _) <- zip [0 ..] argTypes]
+                 )
+               <> "};\n"
+       )
+    <> ( case retType of
+           Just rt -> string7 (cToStr (valTypeToCType rt)) <> " ret;\n"
+           _ -> mempty
+       )
+    <> ffiPoolClosure i j
+    <> "->fun("
+    <> ffiPoolClosure i j
+    <> "->cif,"
+    <> ( case retType of
+           Just _ -> "&ret,"
+           _ -> "NULL,"
+       )
+    <> (if null argTypes then "NULL," else "args,")
+    <> ffiPoolClosure i j
+    <> "->user_data"
+    <> ");\n"
+    <> ( case retType of
+           Just _ -> "return ret;\n"
+           _ -> mempty
+       )
+    <> "}\n"
 
 main :: IO ()
 main = do
