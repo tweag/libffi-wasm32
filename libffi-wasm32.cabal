@@ -6,9 +6,10 @@ executable libffi-wasm32
   main-is:          Main.hs
   build-depends:
     , base        ^>=4.14.3.0
-    , containers
+    , bytestring
     , language-c  >=0.9
     , pretty
+    , process
 
   ghc-options:      -Wall
   hs-source-dirs:   app
