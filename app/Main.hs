@@ -239,6 +239,40 @@ ffiClosureFreeDef :: Builder
 ffiClosureFreeDef =
   "void ffi_closure_free(void *c)\n{\n((ffi_closure*)c)->fun=NULL;\n}\n"
 
+ffiAllocPrepClosureCase :: Word -> Word -> Builder
+ffiAllocPrepClosureCase i m =
+  "case 0x"
+    <> wordHex i
+    <> ":{\nunsigned short j;\n"
+    <> "for(j = 0; j < 0x"
+    <> wordHex m
+    <> "; ++j){\nif("
+    <> ffi_closure_arr
+    <> "[j].fun == NULL){\n"
+    <> "*pclosure="
+    <> ffi_closure_arr
+    <> "+j;break;"
+    <> "}}\n"
+    <> "if(*pclosure==NULL) { return FFI_CLOSURE_ALLOC_FAIL; }\n"
+    <> "(*pclosure)->cif = cif;\n"
+    <> "(*pclosure)->fun = fun;\n"
+    <> "(*pclosure)->user_data = user_data;\n"
+    <> "*code="
+    <> ffi_func_arr
+    <> "[j];\n"
+    <> "return FFI_OK;\n"
+    <> "}\n"
+  where
+    ffi_closure_arr = ffiPoolClosureArrName i
+    ffi_func_arr = ffiPoolFuncArrName i
+
+ffiAllocPrepClosureDef :: [(Word, Word, FuncType)] -> Builder
+ffiAllocPrepClosureDef fts =
+  "ffi_status ffi_alloc_prep_closure(ffi_closure **pclosure, ffi_cif *cif, void (*fun)(ffi_cif *cif, void *ret, void **args, void *user_data), void *user_data, void **code)\n{*pclosure=NULL;\nswitch(cif->encoding){\n"
+    <> mconcat [ffiAllocPrepClosureCase i m | (i, m, _) <- fts]
+    <> "default: {return FFI_BAD_TYPEDEF;}\n"
+    <> "}}\n"
+
 ffiClosureC :: [(Word, Word, FuncType)] -> Builder
 ffiClosureC fts =
   "#include <ffi.h>\n\n"
@@ -249,6 +283,7 @@ ffiClosureC fts =
         | (i, m, ft) <- fts
       ]
     <> ffiClosureFreeDef
+    <> ffiAllocPrepClosureDef fts
 
 main :: IO ()
 main = do
