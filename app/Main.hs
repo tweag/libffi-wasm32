@@ -46,45 +46,40 @@ valTypeToCType F32 =
 valTypeToCType F64 =
   C.DirectType (C.TyFloating C.TyDouble) C.noTypeQuals C.noAttributes
 
-valTypeToCTypeStr :: ValType -> String
-valTypeToCTypeStr =
-  renderStyle (style {mode = OneLineMode}) . C.pretty . valTypeToCType
-
 data FuncType = FuncType
   { argTypes :: [ValType],
     retType :: Maybe ValType
   }
   deriving (Show)
 
-funcTypeToCFunPtrType :: FuncType -> C.Type
-funcTypeToCFunPtrType FuncType {..} =
-  C.PtrType
-    ( C.FunctionType
-        ( C.FunType
-            ( maybe
-                (C.DirectType C.TyVoid C.noTypeQuals C.noAttributes)
-                valTypeToCType
-                retType
-            )
-            [ C.ParamDecl
-                ( C.VarDecl
-                    C.NoName
-                    (C.DeclAttrs C.noFunctionAttrs C.NoStorage C.noAttributes)
-                    (valTypeToCType arg_ty)
-                )
-                C.undefNode
-              | arg_ty <- argTypes
-            ]
-            False
+funcTypeToCType :: FuncType -> C.Type
+funcTypeToCType FuncType {..} =
+  C.FunctionType
+    ( C.FunType
+        ( maybe
+            (C.DirectType C.TyVoid C.noTypeQuals C.noAttributes)
+            valTypeToCType
+            retType
         )
-        C.noAttributes
+        [ C.ParamDecl
+            ( C.VarDecl
+                C.NoName
+                (C.DeclAttrs C.noFunctionAttrs C.NoStorage C.noAttributes)
+                (valTypeToCType arg_ty)
+            )
+            C.undefNode
+          | arg_ty <- argTypes
+        ]
+        False
     )
-    C.noTypeQuals
     C.noAttributes
 
-funcTypeToCFunPtrTypeStr :: FuncType -> String
-funcTypeToCFunPtrTypeStr =
-  renderStyle (style {mode = OneLineMode}) . C.pretty . funcTypeToCFunPtrType
+funcTypeToCFunPtrType :: FuncType -> C.Type
+funcTypeToCFunPtrType ft =
+  C.PtrType (funcTypeToCType ft) C.noTypeQuals C.noAttributes
+
+cToStr :: C.Pretty a => a -> String
+cToStr = renderStyle (style {mode = OneLineMode}) . C.pretty
 
 funcTypeEncode :: FuncType -> Word
 funcTypeEncode FuncType {..} = r * 5 + tag
@@ -132,21 +127,22 @@ ffiCallCase i ft@FuncType {..} =
     <> wordHex i
     <> ": "
     <> ( case retType of
-           Just rt -> "*((" <> string7 (valTypeToCTypeStr rt) <> "*)rvalue) = "
+           Just rt ->
+             "*((" <> string7 (cToStr (valTypeToCType rt)) <> "*)rvalue) = "
            _ -> ""
        )
     <> "(("
-    <> string7 (funcTypeToCFunPtrTypeStr ft)
+    <> string7 (cToStr (funcTypeToCFunPtrType ft))
     <> ")fn)("
     <> mconcat
       ( intersperse
           ", "
           [ "*(("
-              <> string7 (valTypeToCTypeStr vt)
+              <> string7 (cToStr (valTypeToCType vt))
               <> "*)(avalue[0x"
-              <> wordHex i
+              <> wordHex j
               <> "]))"
-            | (i, vt) <- zip [0 ..] argTypes
+            | (j, vt) <- zip [0 ..] argTypes
           ]
       )
     <> "); return;\n"
@@ -159,6 +155,65 @@ ffiCallFunc fts =
 
 ffiCallC :: [(Word, FuncType)] -> Builder
 ffiCallC fts = "#include <ffi.h>\n\n" <> ffiCallFunc fts
+
+ffiPoolClosureArrayName :: Word -> Builder
+ffiPoolClosureArrayName i = "ffi_pool_closure_" <> wordHex i
+
+ffiPoolClosure :: Word -> Word -> Builder
+ffiPoolClosure i j = ffiPoolClosureArrayName i <> "[0x" <> wordHex j <> "]"
+
+ffiPoolFuncName :: Word -> Word -> Builder
+ffiPoolFuncName i j = "ffi_pool_func_" <> wordHex i <> "_" <> wordHex j
+
+ffiPoolFunc :: Word -> FuncType -> Word -> Builder
+ffiPoolFunc i FuncType {..} j =
+  "static "
+    <> ( case retType of
+           Just rt -> string7 (cToStr (valTypeToCType rt))
+           _ -> "void"
+       )
+    <> " "
+    <> ffiPoolFuncName i j
+    <> "("
+    <> mconcat
+      ( intersperse
+          ","
+          [ string7 (cToStr (valTypeToCType arg_ty)) <> " a" <> wordHex k
+            | (k, arg_ty) <- zip [0 ..] argTypes
+          ]
+      )
+    <> ")\n{\n"
+    <> if null argTypes
+      then mempty
+      else
+        "void *args[] = {"
+          <> mconcat
+            ( intersperse
+                ","
+                ["&a" <> wordHex k | (k, _) <- zip [0 ..] argTypes]
+            )
+          <> "};\n"
+          <> ( case retType of
+                 Just rt -> string7 (cToStr (valTypeToCType rt)) <> " ret;\n"
+                 _ -> mempty
+             )
+          <> ffiPoolClosure i j
+          <> "->fun("
+          <> ffiPoolClosure i j
+          <> "->cif,"
+          <> ( case retType of
+                 Just _ -> "&ret,"
+                 _ -> "NULL,"
+             )
+          <> (if null argTypes then "NULL," else "args,")
+          <> ffiPoolClosure i j
+          <> "->user_data"
+          <> ");\n"
+          <> ( case retType of
+                 Just _ -> "return ret;\n"
+                 _ -> mempty
+             )
+          <> "}\n"
 
 main :: IO ()
 main = do
