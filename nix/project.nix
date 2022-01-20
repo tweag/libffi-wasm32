@@ -1,8 +1,5 @@
-{ ghc, haskell-nix }:
+{ callPackage, ghc, haskell-nix }:
 haskell-nix.cabalProject {
-  src = haskell-nix.haskellLib.cleanGit {
-    name = "libffi-wasm32-src";
-    src = ../.;
-  };
+  src = callPackage ./src.nix { };
   compiler-nix-name = ghc;
 }
