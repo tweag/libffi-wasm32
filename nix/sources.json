@@ -22,5 +22,12 @@
         "type": "tarball",
         "url": "https://github.com/TerrorJack/hs-nix-tools/archive/812e5652ea2b8210fd1b800a45c2a07b95460d22.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "wasi-sdk": {
+        "branch": "dejavu",
+        "repo": "https://github.com/tweag/wasi-sdk.git",
+        "rev": "224631f266555102fb737aec9f39aa1578cc0ce4",
+        "sha256": "07pcs6hsba512mi0zah478zpbvp5bs19pfwm7v1asmhks8dprpqs",
+        "type": "git"
     }
 }

@@ -15,5 +15,6 @@ pkgs.callPackage
       ] ++ lib.optionals stdenv.isLinux [ util-linux ];
       exactDeps = true;
       shellHook = lib.optionalString stdenv.isLinux "taskset -pc 0-1000 $$";
+      WASI_SDK_PREFIX = import "${sources.wasi-sdk}/nix" {};
     })
 { }
