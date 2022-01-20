@@ -7,8 +7,6 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
-#define FFI_POOL_SIZE 0x10
-
 typedef enum { FFI_DEFAULT_ABI } ffi_abi;
 
 typedef struct {
