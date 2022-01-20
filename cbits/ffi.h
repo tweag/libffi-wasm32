@@ -14,7 +14,7 @@ typedef enum { FFI_DEFAULT_ABI } ffi_abi;
 typedef struct {
   size_t size;
   unsigned short alignment;
-  uint8_t type;
+  unsigned short type;
 } ffi_type;
 
 extern const ffi_type ffi_type_void;
