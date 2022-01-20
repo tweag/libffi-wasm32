@@ -1,3 +1,4 @@
+*.wasm
 .vscode/*
 cbits/ffi_call.c
 cbits/ffi_closure.c

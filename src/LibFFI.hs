@@ -247,7 +247,7 @@ ffiPoolAllocDef =
     <> "void **f) {\n"
     <> "for (unsigned short j = 0; j < m; ++j) {\n"
     <> "if (cs[j].fun == NULL) {\n"
-    <> "*f = fs + j;\n"
+    <> "*f = fs[j];\n"
     <> "return cs + j;\n"
     <> "}\n"
     <> "}\n"

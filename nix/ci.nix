@@ -4,14 +4,19 @@
 , ghc ? "ghc8107"
 }:
 pkgs.callPackage
-  ({ callPackage, stdenvNoCC }:
+  ({ callPackage, haskell-nix, stdenvNoCC }:
     let
       libffi = callPackage ./libffi.nix { };
       wasi-sdk = import ./wasi-sdk.nix { inherit sources; };
     in
     stdenvNoCC.mkDerivation {
       name = "libffi-wasm32-ci";
-      dontUnpack = true;
+      src = haskell-nix.haskellLib.cleanGit {
+        name = "libffi-wasm32-src";
+        src = ../.;
+        subDir = "cbits_test";
+      };
+      postPatch = "patchShebangs .";
       nativeBuildInputs = [
         (callPackage ./project.nix {
           ghc = "ghc8107";
@@ -21,7 +26,8 @@ pkgs.callPackage
       CC =
         "${wasi-sdk}/bin/clang -std=c11 -Wall -Wextra -Oz -flto -I${libffi}/include -L${libffi}/lib -lffi";
       buildPhase = ''
-        libffi-wasm32-test
+        export HOME=$(mktemp -d)
+        ./test.sh
       '';
       installPhase = "export > $out";
     })
