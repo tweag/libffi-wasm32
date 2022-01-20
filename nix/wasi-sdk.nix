@@ -1,1 +1,1 @@
-{ sources ? import ./nix/sources.nix { } }: import "${sources.wasi-sdk}/nix" { }
+{ sources ? import ./sources.nix { } }: import "${sources.wasi-sdk}/nix" { }
