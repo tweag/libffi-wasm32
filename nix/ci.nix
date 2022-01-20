@@ -4,34 +4,25 @@
 , ghc ? "ghc8107"
 }:
 pkgs.callPackage
-  ({ callPackage }:
-    (import ../shell.nix { inherit sources pkgs ghc; }).overrideAttrs (_: {
-      phases = [ "unpackPhase" "buildPhase" ];
-      src = callPackage ./src.nix { };
+  ({ callPackage, stdenvNoCC }:
+    let
+      libffi = callPackage ./libffi.nix { };
+      wasi-sdk = import ./wasi-sdk.nix { inherit sources; };
+    in
+    stdenvNoCC.mkDerivation {
+      name = "libffi-wasm32-ci";
+      dontUnpack = true;
+      nativeBuildInputs = [
+        (callPackage ./project.nix {
+          ghc = "ghc8107";
+        }).libffi-wasm32.components.tests.libffi-wasm32-test
+        (callPackage "${sources.hs-nix-tools}/pkgs/wasmtime" { })
+      ];
+      CC =
+        "${wasi-sdk}/bin/clang -std=c11 -Wall -Wextra -Oz -flto -I${libffi}/include -L${libffi}/lib -lffi";
       buildPhase = ''
-        export HOME=$(mktemp -d)
-        cabal v2-run libffi-wasm32
-
-        $WASI_SDK_PREFIX/bin/clang \
-          -std=c11 \
-          -Wall \
-          -Wextra \
-          -Icbits \
-          -c \
-          cbits/ffi_call.c \
-          -fsyntax-only
-
-        $WASI_SDK_PREFIX/bin/clang \
-          -std=c11 \
-          -Wall \
-          -Wextra \
-          -Icbits \
-          -c \
-          cbits/ffi_closure.c \
-          -fsyntax-only
-
-        mv cbits $out
+        libffi-wasm32-test
       '';
-      allowedReferences = [ ];
-    }))
+      installPhase = "export > $out";
+    })
 { }

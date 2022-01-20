@@ -1,8 +1,12 @@
-{ callPackage, clang-tools, stdenvNoCC }:
+{ callPackage, clang-tools, haskell-nix, stdenvNoCC }:
 stdenvNoCC.mkDerivation {
   name = "libffi";
   outputs = [ "out" "cbits" ];
-  src = callPackage ./src.nix { };
+  src = haskell-nix.haskellLib.cleanGit {
+    name = "libffi-wasm32-src";
+    src = ../.;
+    subDir = "cbits";
+  };
   nativeBuildInputs = [
     clang-tools
     (callPackage ./project.nix {
@@ -11,6 +15,9 @@ stdenvNoCC.mkDerivation {
     (import ./wasi-sdk.nix { })
   ];
   buildPhase = ''
+    mkdir cbits
+    mv *.c *.h cbits
+
     libffi-wasm32
     cp -r cbits $cbits
 
