@@ -11,6 +11,17 @@ executable libffi-wasm32
     , pretty
     , process
 
-  ghc-options:      -Wall
+  ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N
   hs-source-dirs:   app
+  default-language: Haskell2010
+
+test-suite libffi-wasm32-test
+  type:             exitcode-stdio-1.0
+  main-is:          Main.hs
+  build-depends:
+    , base
+    , sydtest
+
+  ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N
+  hs-source-dirs:   test
   default-language: Haskell2010
