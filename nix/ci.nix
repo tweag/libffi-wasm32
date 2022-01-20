@@ -30,7 +30,7 @@ pkgs.callPackage
           cbits/ffi_closure.c \
           -fsyntax-only
 
-        touch $out
+        mv cbits $out
       '';
       allowedReferences = [ ];
     }))
