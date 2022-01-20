@@ -1,0 +1,33 @@
+{
+    "haskell-nix": {
+        "branch": "master",
+        "description": "Alternative Haskell Infrastructure for Nixpkgs",
+        "homepage": "https://input-output-hk.github.io/haskell.nix",
+        "owner": "TerrorJack",
+        "repo": "haskell.nix",
+        "rev": "5f1857bda3f7e8f7b4e42bcffffb50e83efd90e0",
+        "sha256": "13299nwdfpvhfca0akz4ccdkc9rkpjyzmmblmx5nr9qpxfbjbvlx",
+        "type": "tarball",
+        "url": "https://github.com/TerrorJack/haskell.nix/archive/5f1857bda3f7e8f7b4e42bcffffb50e83efd90e0.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "hs-nix-tools": {
+        "branch": "develop",
+        "description": null,
+        "homepage": null,
+        "owner": "TerrorJack",
+        "repo": "hs-nix-tools",
+        "rev": "812e5652ea2b8210fd1b800a45c2a07b95460d22",
+        "sha256": "14jyi95i334vwr6zw3pf7ikjgjrx933l4d1zkqm7xs8xpxm0vg75",
+        "type": "tarball",
+        "url": "https://github.com/TerrorJack/hs-nix-tools/archive/812e5652ea2b8210fd1b800a45c2a07b95460d22.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "wasi-sdk": {
+        "branch": "dejavu",
+        "repo": "https://github.com/tweag/wasi-sdk.git",
+        "rev": "224631f266555102fb737aec9f39aa1578cc0ce4",
+        "sha256": "07pcs6hsba512mi0zah478zpbvp5bs19pfwm7v1asmhks8dprpqs",
+        "type": "git"
+    }
+}
