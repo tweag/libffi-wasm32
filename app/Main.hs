@@ -6,14 +6,14 @@ import Data.Foldable
 import Data.List
 import qualified Language.C as C
 import qualified Language.C.Analysis as C
-import System.IO
-import System.Process
 import Text.PrettyPrint
   ( Mode (..),
     Style (..),
     renderStyle,
     style,
   )
+import UnliftIO
+import UnliftIO.Process
 
 data ValType
   = I32
@@ -298,9 +298,12 @@ ffiClosureC fts =
 main :: IO ()
 main = do
   let fts = funcTypeEnum 4
-  withBinaryFile "cbits/ffi_call.c" WriteMode $
-    \h -> hPutBuilder h $ ffiCallC fts
-  callProcess "clang-format" ["-i", "cbits/ffi_call.c"]
-  withBinaryFile "cbits/ffi_closure.c" WriteMode $
-    \h -> hPutBuilder h $ ffiClosureC [(i, 0x10, ft) | (i, ft) <- fts]
-  callProcess "clang-format" ["-i", "cbits/ffi_closure.c"]
+      gen_ffi_call = do
+        withBinaryFile "cbits/ffi_call.c" WriteMode $
+          \h -> hPutBuilder h $ ffiCallC fts
+        callProcess "clang-format" ["-i", "cbits/ffi_call.c"]
+      gen_ffi_closure = do
+        withBinaryFile "cbits/ffi_closure.c" WriteMode $
+          \h -> hPutBuilder h $ ffiClosureC [(i, 0x10, ft) | (i, ft) <- fts]
+        callProcess "clang-format" ["-i", "cbits/ffi_closure.c"]
+  concurrently_ gen_ffi_call gen_ffi_closure

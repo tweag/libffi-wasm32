@@ -9,7 +9,7 @@ executable libffi-wasm32
     , bytestring
     , language-c  >=0.9
     , pretty
-    , process
+    , unliftio
 
   ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N
   hs-source-dirs:   app
