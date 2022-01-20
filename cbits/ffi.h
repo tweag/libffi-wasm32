@@ -17,18 +17,18 @@ typedef struct {
   unsigned short type;
 } ffi_type;
 
-extern const ffi_type ffi_type_void;
-extern const ffi_type ffi_type_uint8;
-extern const ffi_type ffi_type_sint8;
-extern const ffi_type ffi_type_uint16;
-extern const ffi_type ffi_type_sint16;
-extern const ffi_type ffi_type_uint32;
-extern const ffi_type ffi_type_sint32;
-extern const ffi_type ffi_type_uint64;
-extern const ffi_type ffi_type_sint64;
-extern const ffi_type ffi_type_float;
-extern const ffi_type ffi_type_double;
-extern const ffi_type ffi_type_pointer;
+extern ffi_type ffi_type_void;
+extern ffi_type ffi_type_uint8;
+extern ffi_type ffi_type_sint8;
+extern ffi_type ffi_type_uint16;
+extern ffi_type ffi_type_sint16;
+extern ffi_type ffi_type_uint32;
+extern ffi_type ffi_type_sint32;
+extern ffi_type ffi_type_uint64;
+extern ffi_type ffi_type_sint64;
+extern ffi_type ffi_type_float;
+extern ffi_type ffi_type_double;
+extern ffi_type ffi_type_pointer;
 
 typedef struct {
   ffi_abi abi;
