@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 extern "C" {
 #endif
 
@@ -62,6 +62,6 @@ ffi_status ffi_alloc_prep_closure(ffi_closure **pclosure, ffi_cif *cif,
 
 void ffi_closure_free(void *);
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 }
 #endif
