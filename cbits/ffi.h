@@ -6,6 +6,7 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef enum { FFI_DEFAULT_ABI } ffi_abi;
 
@@ -27,6 +28,9 @@ extern ffi_type ffi_type_sint64;
 extern ffi_type ffi_type_float;
 extern ffi_type ffi_type_double;
 extern ffi_type ffi_type_pointer;
+
+typedef uint32_t ffi_arg;
+typedef int32_t ffi_sarg;
 
 typedef struct {
   ffi_abi abi;

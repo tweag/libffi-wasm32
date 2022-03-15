@@ -1,11 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-set -euox pipefail
+set -eu
 
 $CC call.c -o call.wasm
 
-wasmtime call.wasm
+wasmtime run --disable-cache call.wasm
 
 $CC closure.c -o closure.wasm
 
-wasmtime closure.wasm
+wasmtime run --disable-cache closure.wasm

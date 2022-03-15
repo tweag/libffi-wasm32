@@ -1,36 +1,39 @@
 { callPackage, clang-tools, haskell-nix, stdenvNoCC }:
+let
+  wasi-sdk = import ./wasi-sdk.nix { };
+  wasmtime = callPackage ./wasmtime.nix { };
+in
 stdenvNoCC.mkDerivation {
   name = "libffi";
   outputs = [ "out" "cbits" ];
-  src = haskell-nix.haskellLib.cleanGit {
-    name = "libffi-wasm32-src";
-    src = ../.;
-    subDir = "cbits";
-  };
+  src = callPackage ./src.nix { };
   nativeBuildInputs = [
     clang-tools
     (callPackage ./project.nix {
-      ghc = "ghc8107";
+      ghc = "ghc921";
     }).libffi-wasm32.components.exes.libffi-wasm32
-    (import ./wasi-sdk.nix { })
+    wasmtime
   ];
   buildPhase = ''
-    mkdir cbits
-    mv *.c *.h cbits
-
     libffi-wasm32
     cp -r cbits $cbits
 
-    clang -std=c11 -Wall -Wextra -Oz -flto -Icbits -c cbits/ffi.c -o cbits/ffi.o
-    clang -std=c11 -Wall -Wextra -Oz -flto -Icbits -c cbits/ffi_call.c -o cbits/ffi_call.o
-    clang -std=c11 -Wall -Wextra -Oz -flto -Icbits -c cbits/ffi_closure.c -o cbits/ffi_closure.o
+    ${wasi-sdk}/bin/clang -Wall -Wextra -Oz -DNDEBUG -Icbits -c cbits/ffi.c -o cbits/ffi.o
+    ${wasi-sdk}/bin/clang -Wall -Wextra -Oz -DNDEBUG -Icbits -c cbits/ffi_call.c -o cbits/ffi_call.o
+    ${wasi-sdk}/bin/clang -Wall -Wextra -Oz -DNDEBUG -Icbits -c cbits/ffi_closure.c -o cbits/ffi_closure.o
 
     mkdir -p $out/include
     cp cbits/*.h $out/include
     mkdir $out/lib
-    llvm-ar -r $out/lib/libffi.a cbits/*.o
+    ${wasi-sdk}/bin/llvm-ar -r $out/lib/libffi.a cbits/*.o
   '';
   dontInstall = true;
   dontFixup = true;
   allowedReferences = [ ];
+  doInstallCheck = true;
+  installCheckPhase = ''
+    pushd cbits_test
+    CC="${wasi-sdk}/bin/clang -Wall -Wextra -Oz -DNDEBUG -I$out/include -L$out/lib -lffi" ./test.sh
+    popd
+  '';
 }
