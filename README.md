@@ -17,6 +17,8 @@ This is a Haskell cabal project, simply run the `libffi-wasm32`
 executable. It'll generate additional C sources in `cbits`. Then
 include stuff in `cbits` for your own usage.
 
+The generated `cbits` are also available as CI artifacts.
+
 ## How?
 
 There'll probably be a blog post or something.

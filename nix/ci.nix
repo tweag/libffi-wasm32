@@ -1,7 +1,7 @@
 { sources ? import ./sources.nix { }
 , haskellNix ? import sources.haskell-nix { }
 , pkgs ? import haskellNix.sources.nixpkgs-unstable haskellNix.nixpkgsArgs
-, ghc ? "ghc8107"
+, ghc ? "ghc922"
 }:
 pkgs.callPackage
   ({ callPackage, haskell-nix, stdenvNoCC }:
@@ -19,7 +19,7 @@ pkgs.callPackage
       postPatch = "patchShebangs .";
       nativeBuildInputs = [
         (callPackage ./project.nix {
-          ghc = "ghc8107";
+          ghc = "ghc922";
         }).libffi-wasm32.components.tests.libffi-wasm32-test
         (callPackage "${sources.hs-nix-tools}/pkgs/wasmtime" { })
       ];

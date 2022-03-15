@@ -32,6 +32,12 @@ jobs:
         run: |
           cachix watch-store -c9 -j2 asterius &
 
-      - name: test
+      - name: build
         run: |
-          nix-shell --pure --run "cd cbits_test && ./test.sh"
+          cp $(nix build --json --no-link -f nix/top.nix cbits | jq -r '.[0].outputs.cbits')/* cbits
+
+      - name: upload-artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: cbits
+          path: cbits

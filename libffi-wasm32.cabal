@@ -32,7 +32,7 @@ test-suite libffi-wasm32-test
   build-depends:
     , base
     , libffi-wasm32-internal
-    , sydtest
+    , tasty
 
   ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N
   hs-source-dirs:   test

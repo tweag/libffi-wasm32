@@ -152,6 +152,7 @@ ffiCallFunc :: [(Word, FuncType)] -> Builder
 ffiCallFunc fts =
   "void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)\n{\nswitch (cif->encoding) {\n"
     <> mconcat [ffiCallCase i ft | (i, ft) <- fts]
+    <> "default: exit(EXIT_FAILURE);\n"
     <> "}\n}\n"
 
 ffiCallC :: [(Word, FuncType)] -> Builder
@@ -166,7 +167,7 @@ ffiPoolClosureArrDef i m =
     <> ffiPoolClosureArrName i
     <> "[0x"
     <> wordHex m
-    <> "];\n"
+    <> "];\n\n"
 
 ffiPoolClosure :: Word -> Word -> Builder
 ffiPoolClosure i j = ffiPoolClosureArrName i <> "[0x" <> wordHex j <> "]"
@@ -223,7 +224,7 @@ ffiPoolFuncDef i j FuncType {..} =
            Just _ -> "return ret;\n"
            _ -> mempty
        )
-    <> "}\n"
+    <> "}\n\n"
 
 ffiPoolFuncArrName :: Word -> Builder
 ffiPoolFuncArrName i = "ffi_pool_func_" <> wordHex i
@@ -234,11 +235,11 @@ ffiPoolFuncArrDef i m =
     <> ffiPoolFuncArrName i
     <> "[] = {"
     <> mconcat (intersperse "," [ffiPoolFuncName i j | j <- [0 .. m - 1]])
-    <> "};\n"
+    <> "};\n\n"
 
 ffiClosureFreeDef :: Builder
 ffiClosureFreeDef =
-  "void ffi_closure_free(void *c)\n{\n((ffi_closure*)c)->fun=NULL;\n}\n"
+  "void ffi_closure_free(void *c)\n{\n((ffi_closure*)c)->fun=NULL;\n}\n\n"
 
 ffiPoolAllocDef :: Builder
 ffiPoolAllocDef =
@@ -252,7 +253,7 @@ ffiPoolAllocDef =
     <> "}\n"
     <> "}\n"
     <> "return NULL;\n"
-    <> "}\n"
+    <> "}\n\n"
 
 ffiAllocPrepClosureCase :: Word -> Word -> Builder
 ffiAllocPrepClosureCase i m =
