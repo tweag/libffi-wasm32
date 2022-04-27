@@ -1,25 +1,25 @@
 { autoPatchelfHook, fetchzip, lib, stdenv }:
 stdenv.mkDerivation rec {
   pname = "wasmtime";
-  version = "0.35.1";
+  version = "0.36.0";
   src = fetchzip {
     x86_64-linux = {
       url =
         "https://github.com/bytecodealliance/wasmtime/releases/download/v${version}/wasmtime-v${version}-x86_64-linux.tar.xz";
       hash =
-        "sha512-4rDy+XQy4PhYrJ9g1YsGwenD/W7eNwERSRqW5UTfR0JmT+AlMTbsQgVxgDux4cQ/LfawKUkWvRpg0H2O5Wu8fA==";
+        "sha512-YYkaFE1u/nfHtq/Pm1KaLfHqtycCA95Q0y6uGfbRKOf77xzdUmU+I0EPRT4L9sgnFUZpmd3L3KIl7sXMP06eWw==";
     };
     aarch64-linux = {
       url =
         "https://github.com/bytecodealliance/wasmtime/releases/download/v${version}/wasmtime-v${version}-aarch64-linux.tar.xz";
       hash =
-        "sha512-+JqisaBj9rS+dGPhusw3FuvM1jk8ackzVsDe/yQvkh02REK1LmmEslHaPMPwBGR/FANIjpiKKPp2h55BnMK2/Q==";
+        "sha512-Tq8TE/eZ3EZAO0wnW8BuoZ794M/SmSaczmWHKvM7BMzGzkGLoZrB0sSrS9WJfpGKCkglfk5/a24/vXjKnIwTxg==";
     };
     x86_64-darwin = {
       url =
         "https://github.com/bytecodealliance/wasmtime/releases/download/v${version}/wasmtime-v${version}-x86_64-macos.tar.xz";
       hash =
-        "sha512-QYcThsSVl0DRxOVMdnoHjwlWZJylqrsDDBCwuX4MLoqw6pqWzKSEAKFFn8SuOeoQRt4JFIRz2HKVJqMpZsVUeg==";
+        "sha512-tMAoUZCBJB6p3cLqK4LFZqmutzRWvw+dSjBR62oI4L0cCYEu5UzjxHwPMEqEJ5EFMgPlEUOPqFtyi4lrxNZgCA==";
     };
   }.${stdenv.hostPlatform.system};
   nativeBuildInputs = lib.optionals stdenv.isLinux [ autoPatchelfHook ];
