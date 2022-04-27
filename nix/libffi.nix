@@ -10,7 +10,7 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [
     clang-tools
     (callPackage ./project.nix {
-      ghc = "ghc921";
+      ghc = "ghc922";
     }).libffi-wasm32.components.exes.libffi-wasm32
     wasmtime
   ];

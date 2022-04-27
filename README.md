@@ -21,4 +21,5 @@ The generated `cbits` are also available as CI artifacts.
 
 ## How?
 
-There'll probably be a blog post or something.
+See this [blog
+post](https://www.tweag.io/blog/2022-03-17-libffi-wasm32) for details.
