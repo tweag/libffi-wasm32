@@ -1,6 +1,6 @@
 { callPackage, clang-tools, haskell-nix, stdenvNoCC }:
 let
-  wasi-sdk = import ./wasi-sdk.nix { };
+  wasi-sdk = callPackage ./wasi-sdk.nix { };
   wasmtime = callPackage ./wasmtime.nix { };
 in
 stdenvNoCC.mkDerivation {

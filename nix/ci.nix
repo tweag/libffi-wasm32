@@ -7,7 +7,7 @@ pkgs.callPackage
   ({ callPackage, haskell-nix, stdenvNoCC }:
     let
       libffi = callPackage ./libffi.nix { };
-      wasi-sdk = import ./wasi-sdk.nix { inherit sources; };
+      wasi-sdk = callPackage ./wasi-sdk.nix { };
     in
     stdenvNoCC.mkDerivation {
       name = "libffi-wasm32-ci";
