@@ -8,7 +8,7 @@ jobs:
 
   shell:
     name: shell
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
 
       - name: checkout
@@ -34,7 +34,14 @@ jobs:
 
       - name: build
         run: |
+          cp -r $(nix build --json --no-link -f nix/top.nix | jq -r '.[0].outputs.out') out
           cp $(nix build --json --no-link -f nix/top.nix cbits | jq -r '.[0].outputs.cbits')/* cbits
+
+      - name: upload-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: out
+          path: out
 
       - name: upload-artifact
         uses: actions/upload-artifact@v3
