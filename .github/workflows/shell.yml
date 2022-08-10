@@ -11,31 +11,42 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
+      - name: setup-wasi-sdk
+        run: |
+          mkdir -p ${{ runner.temp }}/wasi-sdk
+          curl -f -L --retry 5 https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-16/wasi-sdk-16.0-linux.tar.gz | tar xz --strip-components=1 -C ${{ runner.temp }}/wasi-sdk
+          echo ${{ runner.temp }}/wasi-sdk/bin >> "$GITHUB_PATH"
+
+      - name: setup-wasmtime
+        run: |
+          mkdir -p ~/.local/bin
+          curl -f -L --retry 5 https://github.com/bytecodealliance/wasmtime/releases/download/v0.39.1/wasmtime-v0.39.1-x86_64-linux.tar.xz | tar xJ --strip-components=1 -C ~/.local/bin --wildcards '*/wasmtime'
+
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: setup-nix
-        uses: cachix/install-nix-action@v17
-        with:
-          extra_nix_config: |
-            substituters = https://cache.nixos.org https://hydra.iohk.io
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
-
-      - name: setup-cachix
-        uses: cachix/cachix-action@v10
-        with:
-          name: asterius
-          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
-
-      - name: cachix-watch-store
-        if: ${{ github.repository_owner == 'tweag' }}
+      - name: generate-src
         run: |
-          cachix watch-store -c9 -j2 asterius &
+          cabal update
+          cabal v2-run libffi-wasm32
 
-      - name: build
+      - name: generate-out
         run: |
-          cp -r $(nix build --json --no-link -f nix/top.nix | jq -r '.[0].outputs.out') out
-          cp $(nix build --json --no-link -f nix/top.nix cbits | jq -r '.[0].outputs.cbits')/* cbits
+          parallel -j2 sh -c ::: \
+            "clang -Wall -Wextra -O3 -DNDEBUG -Icbits -c cbits/ffi.c -o cbits/ffi.o" \
+            "clang -Wall -Wextra -O3 -DNDEBUG -Icbits -c cbits/ffi_call.c -o cbits/ffi_call.o" \
+            "clang -Wall -Wextra -O3 -DNDEBUG -Icbits -c cbits/ffi_closure.c -o cbits/ffi_closure.o"
+
+          mkdir -p out/include
+          cp cbits/*.h out/include
+          mkdir -p out/lib
+          llvm-ar -r out/lib/libffi.a cbits/*.o
+
+      - name: test
+        run: |
+          pushd cbits_test
+          CC="clang -Wall -Wextra -O3 -DNDEBUG -I$GITHUB_WORKSPACE/out/include -L$GITHUB_WORKSPACE/out/lib -lffi" ./test.sh
+          popd
 
       - name: upload-artifact
         uses: actions/upload-artifact@v3
