@@ -1,0 +1,18 @@
+name: develop
+
+on:
+  - push
+  - pull_request
+
+jobs:
+
+  develop:
+    name: develop
+    runs-on: ubuntu-22.04
+    steps:
+
+      - name: probe
+        run: |
+          export
+          which clang-format
+          clang-format --version
