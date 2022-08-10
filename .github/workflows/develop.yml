@@ -13,9 +13,14 @@ jobs:
 
       - name: setup-wasi-sdk
         run: |
-          df -hT
-          exit 1
+          mkdir ${{ runner.temp }}/wasi-sdk
+          curl -f -L --retry 5 https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-16/wasi-sdk-16.0-linux.tar.gz | tar xz --strip-components=1 -C ${{ runner.temp }}/wasi-sdk
+          echo ${{ runner.temp }}/wasi-sdk/bin >> "$GITHUB_PATH"
 
       - name: codegen
         run: |
+          export
+          which clang
+          clang --version
+          exit 1
           cabal v2-run libffi-wasm32
