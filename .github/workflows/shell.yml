@@ -27,6 +27,7 @@ jobs:
 
       - name: generate-src
         run: |
+          cabal update
           cabal v2-run libffi-wasm32
 
       - name: generate-out
