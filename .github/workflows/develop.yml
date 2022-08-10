@@ -13,6 +13,4 @@ jobs:
 
       - name: probe
         run: |
-          export
-          which clang-format
-          clang-format --version
+          ghcup list
