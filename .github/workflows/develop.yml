@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
 
-      - name: probe
+      - name: setup-wasi-sdk
         run: |
-          ghcup list
+          df -hT
+          exit 1
+
+      - name: codegen
+        run: |
+          cabal v2-run libffi-wasm32
