@@ -17,10 +17,43 @@ jobs:
           curl -f -L --retry 5 https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-16/wasi-sdk-16.0-linux.tar.gz | tar xz --strip-components=1 -C ${{ runner.temp }}/wasi-sdk
           echo ${{ runner.temp }}/wasi-sdk/bin >> "$GITHUB_PATH"
 
-      - name: codegen
+      - name: setup-wasmtime
         run: |
-          export
-          which clang
-          clang --version
-          exit 1
+          curl -f -L --retry 5 https://github.com/bytecodealliance/wasmtime/releases/download/v0.39.1/wasmtime-v0.39.1-x86_64-linux.tar.xz | tar xJ --strip-components=1 -C ~/.local/bin --wildcards '*/wasmtime'
+
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: generate-src
+        run: |
           cabal v2-run libffi-wasm32
+
+      - name: generate-out
+        run: |
+          parallel -j2 sh -c ::: \
+            "clang -Wall -Wextra -O3 -DNDEBUG -Icbits -c cbits/ffi.c -o cbits/ffi.o" \
+            "clang -Wall -Wextra -O3 -DNDEBUG -Icbits -c cbits/ffi_call.c -o cbits/ffi_call.o" \
+            "clang -Wall -Wextra -O3 -DNDEBUG -Icbits -c cbits/ffi_closure.c -o cbits/ffi_closure.o"
+
+          mkdir -p out/include
+          cp cbits/*.h out/include
+          mkdir -p out/lib
+          llvm-ar -r out/lib/libffi.a cbits/*.o
+
+      - name: test
+        run: |
+          pushd cbits_test
+          CC="clang -Wall -Wextra -O3 -DNDEBUG -I$GITHUB_WORKSPACE/out/include -L$GITHUB_WORKSPACE/out/lib -lffi" ./test.sh
+          popd
+
+      - name: upload-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: out
+          path: out
+
+      - name: upload-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cbits
+          path: cbits
