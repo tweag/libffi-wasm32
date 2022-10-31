@@ -45,7 +45,7 @@ jobs:
       - name: test
         run: |
           pushd cbits_test
-          CC="clang -Wall -Wextra -O3 -DNDEBUG -I$GITHUB_WORKSPACE/out/include -L$GITHUB_WORKSPACE/out/lib -lffi" ./test.sh
+          CC="clang -Wall -Wextra -O3 -DNDEBUG -I$GITHUB_WORKSPACE/out/libffi-wasm32/include -L$GITHUB_WORKSPACE/out/libffi-wasm32/lib -lffi" ./test.sh
           popd
 
       - name: upload-artifact
