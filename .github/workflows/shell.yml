@@ -20,7 +20,7 @@ jobs:
       - name: setup-wasmtime
         run: |
           mkdir -p ~/.local/bin
-          curl -f -L --retry 5 https://github.com/bytecodealliance/wasmtime/releases/download/v0.39.1/wasmtime-v0.39.1-x86_64-linux.tar.xz | tar xJ --strip-components=1 -C ~/.local/bin --wildcards '*/wasmtime'
+          curl -f -L --retry 5 https://github.com/bytecodealliance/wasmtime/releases/download/v2.0.1/wasmtime-v2.0.1-x86_64-linux.tar.xz | tar xJ --strip-components=1 -C ~/.local/bin --wildcards '*/wasmtime'
 
       - name: checkout
         uses: actions/checkout@v3
@@ -37,10 +37,10 @@ jobs:
             "clang -Wall -Wextra -O3 -DNDEBUG -Icbits -c cbits/ffi_call.c -o cbits/ffi_call.o" \
             "clang -Wall -Wextra -O3 -DNDEBUG -Icbits -c cbits/ffi_closure.c -o cbits/ffi_closure.o"
 
-          mkdir -p out/include
-          cp cbits/*.h out/include
-          mkdir -p out/lib
-          llvm-ar -r out/lib/libffi.a cbits/*.o
+          mkdir -p out/libffi-wasm32/include
+          cp cbits/*.h out/libffi-wasm32/include
+          mkdir -p out/libffi-wasm32/lib
+          llvm-ar -r out/libffi-wasm32/lib/libffi.a cbits/*.o
 
       - name: test
         run: |
